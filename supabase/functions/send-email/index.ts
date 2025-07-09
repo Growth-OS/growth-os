@@ -56,6 +56,11 @@ const handler = async (req: Request): Promise<Response> => {
     const emailRequest: EmailRequest = await req.json();
     console.log('Sending email:', emailRequest);
 
+    // Replace newline sequences with <br> tags so plain text replies keep their
+    // formatting when delivered as HTML emails. The regex handles both Windows
+    // (\r\n) and Unix (\n) style newlines.
+    const formattedHtml = emailRequest.html.replace(/\r?\n/g, '<br>');
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -66,7 +71,7 @@ const handler = async (req: Request): Promise<Response> => {
         from: emailRequest.from,
         to: emailRequest.to,
         subject: emailRequest.subject,
-        html: emailRequest.html,
+        html: formattedHtml,
       }),
     });
 
